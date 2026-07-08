@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAllExpenses, deleteExpense } from '../db/storage';
-import { Expense, CATEGORY_COLORS, ExpenseCategory } from '../types';
+import { Expense, getCategoryColor } from '../types';
 import { formatDate } from '../utils/date';
 import { useLanguage } from '../contexts/LanguageContext';
 
@@ -65,9 +65,7 @@ export default function ExpensesScreen() {
         </div>
       ) : (
         sections.map(section => {
-          const color = mode === 'category'
-            ? (CATEGORY_COLORS[section.title as ExpenseCategory] ?? '#95A5A6')
-            : '#4A90E2';
+          const color = mode === 'category' ? getCategoryColor(section.title) : '#4A90E2';
           const label = mode === 'category'
             ? ((s as any)[section.title] ?? section.title)
             : section.title;

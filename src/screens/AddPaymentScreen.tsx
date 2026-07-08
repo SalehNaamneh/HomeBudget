@@ -1,13 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { addWorkerPayment, addExpense } from '../db/storage';
-import { Worker, CATEGORIES, ExpenseCategory } from '../types';
+import { Worker } from '../types';
 import { todayDisplay, isValidDisplayDate, parseInputDate } from '../utils/date';
 import { useLanguage } from '../contexts/LanguageContext';
-
-function tradeToCategory(trade: string): ExpenseCategory {
-  return (CATEGORIES as readonly string[]).includes(trade) ? trade as ExpenseCategory : 'Other';
-}
 
 export default function AddPaymentScreen() {
   const navigate = useNavigate();
@@ -27,7 +23,8 @@ export default function AddPaymentScreen() {
     if (!isValidDisplayDate(date)) { setError(s.errInvalidDate); return; }
 
     const isoDate = parseInputDate(date);
-    const category = worker ? tradeToCategory(worker.trade) : 'Other';
+    // Use the worker's actual trade name as the category — no fallback to 'Other'
+    const category = worker?.trade ?? 'Other';
     const description = worker ? `Payment — ${worker.name}` : 'Worker Payment';
     const expenseId = addExpense(parseFloat(amount), description, category, isoDate, worker?.name ?? '', note.trim());
     addWorkerPayment(parseInt(id!), parseFloat(amount), isoDate, note.trim(), expenseId);

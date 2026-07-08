@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { addExpense, updateExpense, getPayeeSuggestions } from '../db/storage';
-import { CATEGORIES, CATEGORY_COLORS, ExpenseCategory, Expense } from '../types';
+import { CATEGORIES, CATEGORY_COLORS, Expense } from '../types';
 import { todayDisplay, isValidDisplayDate, parseInputDate, formatDate } from '../utils/date';
 import { useLanguage } from '../contexts/LanguageContext';
 
@@ -15,7 +15,7 @@ export default function AddExpenseScreen() {
 
   const [amount, setAmount] = useState(existing ? String(existing.amount) : '');
   const [description, setDescription] = useState(existing?.description ?? '');
-  const [category, setCategory] = useState<ExpenseCategory>(existing?.category ?? 'Materials');
+  const [category, setCategory] = useState<string>(existing?.category ?? 'Materials');
   const [date, setDate] = useState(existing ? formatDate(existing.date) : todayDisplay());
   const [payee, setPayee] = useState(existing?.payee ?? '');
   const [note, setNote] = useState(existing?.note ?? '');
@@ -83,6 +83,13 @@ export default function AddExpenseScreen() {
               );
             })}
           </div>
+          <input
+            className="form-input"
+            value={category}
+            onChange={e => setCategory(e.target.value)}
+            placeholder="Or type a custom category..."
+            style={{ textAlign: isRTL ? 'right' : 'left', marginTop: 6 }}
+          />
 
           <label className="form-label">{s.labelDate}</label>
           <input className="form-input" value={date} onChange={e => setDate(e.target.value)} placeholder={s.phDate} style={{ textAlign: isRTL ? 'right' : 'left' }} />

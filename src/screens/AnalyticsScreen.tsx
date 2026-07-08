@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { getExpenseSummaryByCategory, getTotalExpenses } from '../db/storage';
-import { CATEGORY_COLORS, ExpenseCategory } from '../types';
+import { getCategoryColor } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
 
 export default function AnalyticsScreen() {
@@ -29,7 +29,7 @@ export default function AnalyticsScreen() {
   const chartData = summary.map(item => ({
     name: (s as any)[item.category] ?? item.category,
     value: item.total,
-    color: CATEGORY_COLORS[item.category as ExpenseCategory] ?? '#95A5A6',
+    color: getCategoryColor(item.category),
   }));
 
   return (
@@ -57,7 +57,7 @@ export default function AnalyticsScreen() {
       <div style={{ background: '#fff', margin: '0 16px', borderRadius: 16, padding: 16, boxShadow: '0 2px 8px rgba(0,0,0,0.07)' }}>
         <div style={{ fontSize: 16, fontWeight: 700, color: '#1A2D4F', marginBottom: 8, direction: dir }}>{s.breakdown}</div>
         {summary.map(item => {
-          const color = CATEGORY_COLORS[item.category as ExpenseCategory] ?? '#95A5A6';
+          const color = getCategoryColor(item.category);
           const pct = total > 0 ? ((item.total / total) * 100).toFixed(1) : '0';
           const label = (s as any)[item.category] ?? item.category;
           return (

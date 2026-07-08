@@ -1,14 +1,6 @@
-export type ExpenseCategory =
-  | 'Materials'
-  | 'Construction Worker'
-  | 'Paint Worker'
-  | 'Plumber'
-  | 'Electrician'
-  | 'Iron Worker'
-  | 'Tiling'
-  | 'Other';
+export type ExpenseCategory = string;
 
-export const CATEGORIES: ExpenseCategory[] = [
+export const CATEGORIES: string[] = [
   'Materials',
   'Construction Worker',
   'Paint Worker',
@@ -19,7 +11,7 @@ export const CATEGORIES: ExpenseCategory[] = [
   'Other',
 ];
 
-export const CATEGORY_COLORS: Record<ExpenseCategory, string> = {
+export const CATEGORY_COLORS: Record<string, string> = {
   Materials: '#4A90E2',
   'Construction Worker': '#E67E22',
   'Paint Worker': '#2ECC71',
@@ -29,6 +21,10 @@ export const CATEGORY_COLORS: Record<ExpenseCategory, string> = {
   Tiling: '#1ABC9C',
   Other: '#95A5A6',
 };
+
+export function getCategoryColor(cat: string): string {
+  return CATEGORY_COLORS[cat] ?? '#95A5A6';
+}
 
 export interface Expense {
   id: number;
