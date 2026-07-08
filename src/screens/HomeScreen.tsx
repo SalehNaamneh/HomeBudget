@@ -18,9 +18,16 @@ export default function HomeScreen() {
   const [showLogout, setShowLogout] = useState(false);
 
   useEffect(() => {
-    setTotalExpenses(getTotalExpenses());
-    setTotalChecks(getTotalChecks());
-    setUpcomingChecks(getAllChecks().filter(c => daysUntil(c.withdrawal_date) >= 0).slice(0, 3));
+    (async () => {
+      const [totalExp, totalChk, allChecks] = await Promise.all([
+        getTotalExpenses(),
+        getTotalChecks(),
+        getAllChecks(),
+      ]);
+      setTotalExpenses(totalExp);
+      setTotalChecks(totalChk);
+      setUpcomingChecks(allChecks.filter(c => daysUntil(c.withdrawal_date) >= 0).slice(0, 3));
+    })();
   }, []);
 
   const dir = isRTL ? 'rtl' : 'ltr';
@@ -120,15 +127,15 @@ export default function HomeScreen() {
             <div className="confirm-title" style={{ marginBottom: 6 }}>Export Data as CSV</div>
             <div style={{ fontSize: 13, color: '#666', marginBottom: 18 }}>Download your data as spreadsheet files you can open in Excel or Google Sheets.</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <button onClick={() => { exportExpenses(); setShowExport(false); }} style={{ background: '#4A90E2', color: '#fff', border: 'none', borderRadius: 10, padding: '12px 16px', fontSize: 14, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <button onClick={async () => { await exportExpenses(); setShowExport(false); }} style={{ background: '#4A90E2', color: '#fff', border: 'none', borderRadius: 10, padding: '12px 16px', fontSize: 14, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                 Download Expenses
               </button>
-              <button onClick={() => { exportChecks(); setShowExport(false); }} style={{ background: '#E67E22', color: '#fff', border: 'none', borderRadius: 10, padding: '12px 16px', fontSize: 14, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <button onClick={async () => { await exportChecks(); setShowExport(false); }} style={{ background: '#E67E22', color: '#fff', border: 'none', borderRadius: 10, padding: '12px 16px', fontSize: 14, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                 Download Checks
               </button>
-              <button onClick={() => { exportWorkers(); setShowExport(false); }} style={{ background: '#9B59B6', color: '#fff', border: 'none', borderRadius: 10, padding: '12px 16px', fontSize: 14, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <button onClick={async () => { await exportWorkers(); setShowExport(false); }} style={{ background: '#9B59B6', color: '#fff', border: 'none', borderRadius: 10, padding: '12px 16px', fontSize: 14, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                 Download Workers & Payments
               </button>
@@ -148,7 +155,7 @@ export default function HomeScreen() {
             <div className="confirm-msg">You'll need to sign in again to access your data.</div>
             <div className="confirm-btns">
               <button className="confirm-btn cancel" onClick={() => setShowLogout(false)}>Cancel</button>
-              <button className="confirm-btn danger" onClick={() => { logout(); navigate('/login', { replace: true }); }}>Sign Out</button>
+              <button className="confirm-btn danger" onClick={() => logout()}>Sign Out</button>
             </div>
           </div>
         </div>

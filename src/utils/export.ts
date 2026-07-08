@@ -17,29 +17,29 @@ function downloadCsv(filename: string, rows: (string | number)[][]) {
   URL.revokeObjectURL(url);
 }
 
-export function exportExpenses() {
+export async function exportExpenses(): Promise<void> {
   const rows: (string | number)[][] = [
     ['Date', 'Amount (₪)', 'Description', 'Category', 'Paid To', 'Note'],
-    ...getAllExpenses().map(e => [formatDate(e.date), e.amount, e.description, e.category, e.payee, e.note]),
+    ...(await getAllExpenses()).map(e => [formatDate(e.date), e.amount, e.description, e.category, e.payee, e.note]),
   ];
   downloadCsv('expenses.csv', rows);
 }
 
-export function exportChecks() {
+export async function exportChecks(): Promise<void> {
   const rows: (string | number)[][] = [
     ['Withdrawal Date', 'Amount (₪)', 'Payee', 'Check Number', 'Note'],
-    ...getAllChecks().map(c => [formatDate(c.withdrawal_date), c.amount, c.payee, c.check_number, c.note]),
+    ...(await getAllChecks()).map(c => [formatDate(c.withdrawal_date), c.amount, c.payee, c.check_number, c.note]),
   ];
   downloadCsv('checks.csv', rows);
 }
 
-export function exportWorkers() {
+export async function exportWorkers(): Promise<void> {
   const rows: (string | number)[][] = [
     ['Worker Name', 'Trade', 'Total Fee (₪)', 'Total Paid (₪)', 'Remaining (₪)', 'Payment Date', 'Payment Amount (₪)', 'Payment Note'],
   ];
-  for (const w of getAllWorkers()) {
-    const payments = getWorkerPayments(w.id);
-    const totalPaid = getTotalPaidForWorker(w.id);
+  for (const w of await getAllWorkers()) {
+    const payments = await getWorkerPayments(w.id);
+    const totalPaid = await getTotalPaidForWorker(w.id);
     const remaining = Math.max(0, w.totalFee - totalPaid);
     if (payments.length === 0) {
       rows.push([w.name, w.trade, w.totalFee, totalPaid, remaining, '', '', '']);

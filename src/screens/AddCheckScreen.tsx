@@ -19,26 +19,33 @@ export default function AddCheckScreen() {
   const [date, setDate] = useState(existing ? formatDate(existing.withdrawal_date) : todayDisplay());
   const [checkNumber, setCheckNumber] = useState(existing?.check_number ?? '');
   const [error, setError] = useState('');
+  const [saving, setSaving] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
 
   useEffect(() => {
-    if (payee.length >= 1) setSuggestions(getPayeeSuggestions(payee));
+    if (payee.length >= 1) getPayeeSuggestions(payee).then(setSuggestions);
     else setSuggestions([]);
   }, [payee]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setError('');
     if (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) { setError(s.errInvalidAmount); return; }
     if (!payee.trim()) { setError(s.errMissingPayee); return; }
     if (!isValidDisplayDate(date)) { setError(s.errInvalidDate); return; }
 
-    const isoDate = parseInputDate(date);
-    if (isEdit && existing) {
-      updateCheck(existing.id, parseFloat(amount), payee.trim(), note.trim(), isoDate, checkNumber.trim());
-    } else {
-      addCheck(parseFloat(amount), payee.trim(), note.trim(), isoDate, checkNumber.trim());
+    setSaving(true);
+    try {
+      const isoDate = parseInputDate(date);
+      if (isEdit && existing) {
+        await updateCheck(existing.id, parseFloat(amount), payee.trim(), note.trim(), isoDate, checkNumber.trim());
+      } else {
+        await addCheck(parseFloat(amount), payee.trim(), note.trim(), isoDate, checkNumber.trim());
+      }
+      navigate(-1);
+    } catch {
+      setError('Failed to save. Please try again.');
+      setSaving(false);
     }
-    navigate(-1);
   };
 
   const dir = isRTL ? 'rtl' : 'ltr';
@@ -81,9 +88,9 @@ export default function AddCheckScreen() {
           <label className="form-label">{s.labelNote}</label>
           <textarea className="form-input multiline" value={note} onChange={e => setNote(e.target.value)} placeholder={s.phCheckNote} style={{ textAlign: isRTL ? 'right' : 'left' }} />
 
-          <button className="save-btn" onClick={handleSave}>
+          <button className="save-btn" onClick={handleSave} disabled={saving} style={{ opacity: saving ? 0.7 : 1 }}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
-            {isEdit ? s.saveChanges : s.saveCheck}
+            {saving ? 'Saving…' : isEdit ? s.saveChanges : s.saveCheck}
           </button>
         </div>
       </div>

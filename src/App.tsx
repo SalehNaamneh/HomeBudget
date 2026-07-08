@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { HashRouter, Routes, Route, NavLink, useNavigate, Outlet, Navigate } from 'react-router-dom';
+import { HashRouter, Routes, Route, NavLink, Outlet, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
 import { notifyOnOpen, getUrgentChecks } from './utils/notifications';
@@ -70,7 +70,7 @@ function TabLayout() {
 
   useEffect(() => {
     notifyOnOpen();
-    setUrgentCount(getUrgentChecks().length);
+    getUrgentChecks().then(checks => setUrgentCount(checks.length));
   }, []);
 
   return (
@@ -84,7 +84,8 @@ function TabLayout() {
 }
 
 function ProtectedRoute() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+  if (loading) return <div style={{ minHeight: '100vh', background: '#1A2D4F' }} />;
   return user ? <Outlet /> : <Navigate to="/login" replace />;
 }
 

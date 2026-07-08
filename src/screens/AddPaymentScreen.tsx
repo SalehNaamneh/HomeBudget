@@ -16,19 +16,25 @@ export default function AddPaymentScreen() {
   const [date, setDate] = useState(todayDisplay());
   const [note, setNote] = useState('');
   const [error, setError] = useState('');
+  const [saving, setSaving] = useState(false);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setError('');
     if (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) { setError(s.errInvalidAmount); return; }
     if (!isValidDisplayDate(date)) { setError(s.errInvalidDate); return; }
 
-    const isoDate = parseInputDate(date);
-    // Use the worker's actual trade name as the category — no fallback to 'Other'
-    const category = worker?.trade ?? 'Other';
-    const description = worker ? `Payment — ${worker.name}` : 'Worker Payment';
-    const expenseId = addExpense(parseFloat(amount), description, category, isoDate, worker?.name ?? '', note.trim());
-    addWorkerPayment(parseInt(id!), parseFloat(amount), isoDate, note.trim(), expenseId);
-    navigate(-1);
+    setSaving(true);
+    try {
+      const isoDate = parseInputDate(date);
+      const category = worker?.trade ?? 'Other';
+      const description = worker ? `Payment — ${worker.name}` : 'Worker Payment';
+      const expenseId = await addExpense(parseFloat(amount), description, category, isoDate, worker?.name ?? '', note.trim());
+      await addWorkerPayment(parseInt(id!), parseFloat(amount), isoDate, note.trim(), expenseId);
+      navigate(-1);
+    } catch {
+      setError('Failed to save. Please try again.');
+      setSaving(false);
+    }
   };
 
   const dir = isRTL ? 'rtl' : 'ltr';
@@ -56,9 +62,9 @@ export default function AddPaymentScreen() {
           <label className="form-label">{s.labelNote}</label>
           <textarea className="form-input multiline" value={note} onChange={e => setNote(e.target.value)} placeholder={s.phNote} style={{ textAlign: isRTL ? 'right' : 'left' }} />
 
-          <button className="save-btn" onClick={handleSave}>
+          <button className="save-btn" onClick={handleSave} disabled={saving} style={{ opacity: saving ? 0.7 : 1 }}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
-            {s.savePayment}
+            {saving ? 'Saving…' : s.savePayment}
           </button>
         </div>
       </div>

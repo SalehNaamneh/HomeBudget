@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 import { getExpenseSummaryByCategory, getTotalExpenses } from '../db/storage';
 import { getCategoryColor } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -10,8 +10,11 @@ export default function AnalyticsScreen() {
   const [total, setTotal] = useState(0);
 
   useEffect(() => {
-    setSummary(getExpenseSummaryByCategory());
-    setTotal(getTotalExpenses());
+    (async () => {
+      const [sum, tot] = await Promise.all([getExpenseSummaryByCategory(), getTotalExpenses()]);
+      setSummary(sum);
+      setTotal(tot);
+    })();
   }, []);
 
   const dir = isRTL ? 'rtl' : 'ltr';

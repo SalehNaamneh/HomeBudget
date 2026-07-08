@@ -8,13 +8,22 @@ export default function WorkersScreen() {
   const navigate = useNavigate();
   const { s, isRTL } = useLanguage();
   const [workers, setWorkers] = useState<Worker[]>([]);
+  const [paidMap, setPaidMap] = useState<Record<number, number>>({});
   const [confirmId, setConfirmId] = useState<number | null>(null);
 
-  const load = () => setWorkers(getAllWorkers());
+  const load = async () => {
+    const ws = await getAllWorkers();
+    setWorkers(ws);
+    const paid = await Promise.all(ws.map(w => getTotalPaidForWorker(w.id)));
+    const map: Record<number, number> = {};
+    ws.forEach((w, i) => { map[w.id] = paid[i]; });
+    setPaidMap(map);
+  };
+
   useEffect(() => { load(); }, []);
 
-  const handleDelete = (id: number) => {
-    deleteWorker(id);
+  const handleDelete = async (id: number) => {
+    await deleteWorker(id);
     setConfirmId(null);
     load();
   };
@@ -22,7 +31,7 @@ export default function WorkersScreen() {
   const dir = isRTL ? 'rtl' : 'ltr';
 
   const totalFeeAll = workers.reduce((s, w) => s + w.totalFee, 0);
-  const totalPaidAll = workers.reduce((s, w) => s + getTotalPaidForWorker(w.id), 0);
+  const totalPaidAll = workers.reduce((s, w) => s + (paidMap[w.id] ?? 0), 0);
   const totalRemaining = totalFeeAll - totalPaidAll;
 
   return (
@@ -54,7 +63,7 @@ export default function WorkersScreen() {
       ) : (
         <div style={{ padding: '10px 0 80px' }}>
           {workers.map(worker => {
-            const paid = getTotalPaidForWorker(worker.id);
+            const paid = paidMap[worker.id] ?? 0;
             const remaining = worker.totalFee - paid;
             const pct = worker.totalFee > 0 ? Math.min(100, (paid / worker.totalFee) * 100) : 0;
             const fullyPaid = remaining <= 0;

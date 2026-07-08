@@ -1,27 +1,26 @@
 import { getAllChecks } from '../db/storage';
+import { Check } from '../types';
 import { daysUntil } from './date';
 
-export function getUrgentChecks() {
-  return getAllChecks().filter(c => {
+export async function getUrgentChecks(): Promise<Check[]> {
+  const checks = await getAllChecks();
+  return checks.filter(c => {
     const days = daysUntil(c.withdrawal_date);
     return days >= 0 && days <= 2;
   });
 }
 
 export async function notifyOnOpen(): Promise<void> {
-  // Only fire once per browser session so it doesn't spam on every navigation
   if (sessionStorage.getItem('hb_notified')) return;
   sessionStorage.setItem('hb_notified', '1');
 
-  const urgent = getUrgentChecks();
+  const urgent = await getUrgentChecks();
   if (urgent.length === 0) return;
 
   if (!('Notification' in window)) return;
 
   let permission = Notification.permission;
-  if (permission === 'default') {
-    permission = await Notification.requestPermission();
-  }
+  if (permission === 'default') permission = await Notification.requestPermission();
   if (permission !== 'granted') return;
 
   if (urgent.length === 1) {

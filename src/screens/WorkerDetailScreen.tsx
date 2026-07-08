@@ -16,19 +16,22 @@ export default function WorkerDetailScreen() {
   const [paid, setPaid] = useState(0);
   const [confirmId, setConfirmId] = useState<number | null>(null);
 
-  const load = () => {
+  const load = async () => {
     const wid = parseInt(id!);
-    const w = getWorker(wid);
+    const [w, p, totalPaid] = await Promise.all([
+      getWorker(wid),
+      getWorkerPayments(wid),
+      getTotalPaidForWorker(wid),
+    ]);
     if (w) setWorker(w);
-    const p = getWorkerPayments(wid);
     setPayments(p);
-    setPaid(getTotalPaidForWorker(wid));
+    setPaid(totalPaid);
   };
 
   useEffect(() => { load(); }, [id]);
 
-  const handleDeletePayment = (pid: number) => {
-    deleteWorkerPayment(pid);
+  const handleDeletePayment = async (pid: number) => {
+    await deleteWorkerPayment(pid);
     setConfirmId(null);
     load();
   };

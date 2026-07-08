@@ -18,19 +18,26 @@ export default function AddWorkerScreen() {
   const [totalFee, setTotalFee] = useState(existing ? String(existing.totalFee) : '');
   const [note, setNote] = useState(existing?.note ?? '');
   const [error, setError] = useState('');
+  const [saving, setSaving] = useState(false);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setError('');
     if (!name.trim()) { setError(s.errMissingName); return; }
     if (!trade.trim()) { setError(s.errMissingTrade); return; }
     if (!totalFee || isNaN(parseFloat(totalFee)) || parseFloat(totalFee) <= 0) { setError(s.errInvalidAmount); return; }
 
-    if (isEdit && existing) {
-      updateWorker(existing.id, name.trim(), trade.trim(), parseFloat(totalFee), note.trim());
-    } else {
-      addWorker(name.trim(), trade.trim(), parseFloat(totalFee), note.trim());
+    setSaving(true);
+    try {
+      if (isEdit && existing) {
+        await updateWorker(existing.id, name.trim(), trade.trim(), parseFloat(totalFee), note.trim());
+      } else {
+        await addWorker(name.trim(), trade.trim(), parseFloat(totalFee), note.trim());
+      }
+      navigate(-1);
+    } catch {
+      setError('Failed to save. Please try again.');
+      setSaving(false);
     }
-    navigate(-1);
   };
 
   const dir = isRTL ? 'rtl' : 'ltr';
@@ -74,9 +81,9 @@ export default function AddWorkerScreen() {
           <label className="form-label">{s.labelNote}</label>
           <textarea className="form-input multiline" value={note} onChange={e => setNote(e.target.value)} placeholder={s.phNote} style={{ textAlign: isRTL ? 'right' : 'left' }} />
 
-          <button className="save-btn" onClick={handleSave}>
+          <button className="save-btn" onClick={handleSave} disabled={saving} style={{ opacity: saving ? 0.7 : 1 }}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
-            {isEdit ? s.saveChanges : s.saveWorker}
+            {saving ? 'Saving…' : isEdit ? s.saveChanges : s.saveWorker}
           </button>
         </div>
       </div>

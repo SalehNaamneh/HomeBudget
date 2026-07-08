@@ -27,8 +27,8 @@ export default function ExpensesScreen() {
   const [mode, setMode] = useState<'category' | 'name'>('category');
   const [confirmId, setConfirmId] = useState<number | null>(null);
 
-  const load = (m: 'category' | 'name' = mode) => {
-    const expenses = getAllExpenses();
+  const load = async (m: 'category' | 'name' = mode) => {
+    const expenses = await getAllExpenses();
     setSections(groupBy(expenses, m === 'category' ? 'category' : 'payee', s.unknown));
     setGrandTotal(expenses.reduce((sum, e) => sum + e.amount, 0));
   };
@@ -37,8 +37,8 @@ export default function ExpensesScreen() {
 
   const switchMode = (m: 'category' | 'name') => { setMode(m); load(m); };
 
-  const handleDelete = (id: number) => {
-    deleteExpense(id);
+  const handleDelete = async (id: number) => {
+    await deleteExpense(id);
     setConfirmId(null);
     load();
   };

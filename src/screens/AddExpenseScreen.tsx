@@ -20,30 +20,37 @@ export default function AddExpenseScreen() {
   const [payee, setPayee] = useState(existing?.payee ?? '');
   const [note, setNote] = useState(existing?.note ?? '');
   const [error, setError] = useState('');
+  const [saving, setSaving] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const payeeRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (payee.length >= 1) {
-      setSuggestions(getPayeeSuggestions(payee));
+      getPayeeSuggestions(payee).then(setSuggestions);
     } else {
       setSuggestions([]);
     }
   }, [payee]);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setError('');
     if (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) { setError(s.errInvalidAmount); return; }
     if (!description.trim()) { setError(s.errMissingDesc); return; }
     if (!isValidDisplayDate(date)) { setError(s.errInvalidDate); return; }
 
-    const isoDate = parseInputDate(date);
-    if (isEdit && existing) {
-      updateExpense(existing.id, parseFloat(amount), description.trim(), category, isoDate, payee.trim(), note.trim());
-    } else {
-      addExpense(parseFloat(amount), description.trim(), category, isoDate, payee.trim(), note.trim());
+    setSaving(true);
+    try {
+      const isoDate = parseInputDate(date);
+      if (isEdit && existing) {
+        await updateExpense(existing.id, parseFloat(amount), description.trim(), category, isoDate, payee.trim(), note.trim());
+      } else {
+        await addExpense(parseFloat(amount), description.trim(), category, isoDate, payee.trim(), note.trim());
+      }
+      navigate(-1);
+    } catch {
+      setError('Failed to save. Please try again.');
+      setSaving(false);
     }
-    navigate(-1);
   };
 
   const dir = isRTL ? 'rtl' : 'ltr';
@@ -111,9 +118,9 @@ export default function AddExpenseScreen() {
           <label className="form-label">{s.labelNote}</label>
           <textarea className="form-input multiline" value={note} onChange={e => setNote(e.target.value)} placeholder={s.phNote} style={{ textAlign: isRTL ? 'right' : 'left' }} />
 
-          <button className="save-btn" onClick={handleSave}>
+          <button className="save-btn" onClick={handleSave} disabled={saving} style={{ opacity: saving ? 0.7 : 1 }}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
-            {isEdit ? s.saveChanges : s.saveExpense}
+            {saving ? 'Saving…' : isEdit ? s.saveChanges : s.saveExpense}
           </button>
         </div>
       </div>

@@ -14,10 +14,10 @@ export default function ChecksScreen() {
   const [passedChecks, setPassedChecks] = useState<Check[]>([]);
   const [showPassedModal, setShowPassedModal] = useState(false);
 
-  const load = () => {
-    const all = getAllChecks();
+  const load = async () => {
+    const [all, tot] = await Promise.all([getAllChecks(), getTotalChecks()]);
     setChecks(all);
-    setTotal(getTotalChecks());
+    setTotal(tot);
     const passed = all.filter(c => daysUntil(c.withdrawal_date) < 0);
     if (passed.length > 0) {
       setPassedChecks(passed);
@@ -27,20 +27,20 @@ export default function ChecksScreen() {
 
   useEffect(() => { load(); }, []);
 
-  const handleDelete = (id: number) => {
-    deleteCheck(id);
+  const handleDelete = async (id: number) => {
+    await deleteCheck(id);
     setConfirmDelete(null);
     load();
   };
 
-  const moveToExpenses = (check: Check) => {
-    addExpense(check.amount, `Check - ${check.payee}`, 'Other', check.withdrawal_date, check.payee, check.note || check.check_number || '');
-    deleteCheck(check.id);
+  const moveToExpenses = async (check: Check) => {
+    await addExpense(check.amount, `Check - ${check.payee}`, 'Other', check.withdrawal_date, check.payee, check.note || check.check_number || '');
+    await deleteCheck(check.id);
     load();
   };
 
-  const moveAll = () => {
-    passedChecks.forEach(c => moveToExpenses(c));
+  const moveAll = async () => {
+    await Promise.all(passedChecks.map(c => moveToExpenses(c)));
     setShowPassedModal(false);
     load();
   };
